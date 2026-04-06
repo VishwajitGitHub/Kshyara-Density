@@ -51,9 +51,8 @@ export const ALL_MODELS = [
   { id: 'claude-3-7',   name: 'Claude 3.7',      provider: 'Anthropic', specialty: 'reasoning',   active: true,  confidence: 0.96, costPer1k: 0.008 },
   { id: 'gemini-2-5',   name: 'Gemini 2.5',      provider: 'Google',    specialty: 'multimodal',  active: true,  confidence: 0.94, costPer1k: 0.003 },
   { id: 'deepseek-r1',  name: 'DeepSeek R1',     provider: 'DeepSeek',  specialty: 'coding',      active: false, confidence: 0.95, costPer1k: 0.001 },
-  { id: 'llama-3-3',    name: 'LLaMA 3.3',       provider: 'Meta',      specialty: 'general',     active: false, confidence: 0.89, costPer1k: 0.0   },
-  { id: 'qwen-2-5',     name: 'Qwen 2.5',        provider: 'Alibaba',   specialty: 'multilingual',active: false, confidence: 0.88, costPer1k: 0.001 },
-  { id: 'mistral',      name: 'Mistral Large',   provider: 'Mistral',   specialty: 'efficient',   active: false, confidence: 0.90, costPer1k: 0.002 },
+  { id: 'llama-3-3-groq',name: 'LLaMA 3.3 (Groq)',provider: 'Groq',      specialty: 'speed',       active: true,  confidence: 0.89, costPer1k: 0.0005 },
+  { id: 'openrouter-auto',name: 'Auto (OR)',     provider: 'OpenRouter',specialty: 'dynamic',    active: false, confidence: 0.90, costPer1k: 0.002 },
 ];
 
 export const MENTION_MAP = {

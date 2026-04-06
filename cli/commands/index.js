@@ -17,13 +17,27 @@ import { modelsCommand } from './models.js';
 import { refineCommand } from './refine.js';
 import { searchCommand } from './search.js';
 import { themeCommand } from './theme.js';
+import { planCommand } from './plan.js';
+import { agentCommand } from './agent.js';
+import { criticCommand } from './critic.js';
+import { runCommand } from './run.js';
+import { fileCommand } from './file.js';
+import { shellCommand } from './shell.js';
+import { pluginCommand } from './plugin.js';
 
 export const commands = {
   '/ask':     { handler: askCommand,     description: 'Ask a question with current model', usage: '/ask <prompt>', alias: ['/query']        },
   '/combine': { handler: combineCommand, description: 'Ask all models and merge best answer', usage: '/combine <prompt>', alias: ['/best', '/merge']},
   '/debate':  { handler: debateCommand,  description: 'Models argue opposing positions', usage: '/debate <topic>', alias: ['/argue']        },
   '/refine':  { handler: refineCommand,  description: 'Iteratively improve the last response', usage: '/refine', alias: ['/improve']      },
+  '/plan':    { handler: planCommand,    description: 'Activate planner agent to decompose tasks', usage: '/plan <task>' },
+  '/agent':   { handler: agentCommand,   description: 'Run autonomous agent swarm', usage: '/agent <task>', alias: ['/swarm'] },
+  '/critic':  { handler: criticCommand,  description: 'Run critic agent on last response', usage: '/critic [text]' },
+  '/run':     { handler: runCommand,     description: 'Execute code in sandbox', usage: '/run <lang> <code>', alias: ['/exec'] },
+  '/file':    { handler: fileCommand,    description: 'Attach a file to context', usage: '/file <path>', alias: ['/read'] },
+  '/shell':   { handler: shellCommand,   description: 'Execute a shell command', usage: '/shell <cmd>', alias: ['/sh'] },
   '/search':  { handler: searchCommand,  description: 'Web search with cited sources', usage: '/search <query>', alias: ['/web', '/find'] },
+  '/plugin':  { handler: pluginCommand,  description: 'Manage plugins', usage: '/plugin [list|toggle]', alias: ['/plugins'] },
   '/chat':    { handler: chatCommand,    description: 'Switch to chat mode', usage: '/chat'                            },
   '/models':  { handler: modelsCommand,  description: 'List and manage models', usage: '/models [list|toggle|set]', alias: ['/model', '/m']  },
   '/login':   { handler: loginCommand,   description: 'Set API key and username', usage: '/login', alias: ['/auth']         },

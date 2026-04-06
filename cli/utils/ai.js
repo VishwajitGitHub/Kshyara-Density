@@ -1,69 +1,86 @@
 import { state } from '../state/index.js';
-
-const MOCK_RESPONSES = {
-  coding: [
-    "Here is the refactored code:\n```javascript\nfunction optimized() { return true; }\n```",
-    "I found a bug on line 42. You should use a Map instead of an Object for O(1) lookups.",
-  ],
-  reasoning: [
-    "Let's break this down step by step.\n1. First, we analyze the input.\n2. Then we apply the transformation.\nTherefore, the answer is 42.",
-    "The core issue is a race condition. When thread A accesses the resource, thread B might overwrite it.",
-  ],
-  general: [
-    "I can help with that! What specific details do you need?",
-    "That's an interesting question. Generally, it depends on the context.",
-  ]
-};
+import { streamGemini } from '../../models/providers/gemini.js';
+import { streamAnthropic } from '../../models/providers/anthropic.js';
+import { streamOpenAICompatible } from '../../models/providers/openaiCompatible.js';
 
 export function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
 export async function sendToAI(prompt, options = {}) {
-  const modelId = options.model || state.routeModelForTask(prompt);
-  const model = state.getModelById(modelId) || state.activeModels[0];
+  // We will accumulate the stream to return a full response
+  let fullContent = '';
+  let metadata = null;
+  const gen = streamResponse(prompt, options);
   
-  let type = 'general';
-  if (/code|function|bug/i.test(prompt)) type = 'coding';
-  if (/why|explain|reason/i.test(prompt)) type = 'reasoning';
+  for await (const event of gen) {
+    if (event.type === 'chunk') fullContent += event.text;
+    if (event.type === 'end') metadata = event.metadata;
+  }
   
-  const responses = MOCK_RESPONSES[type];
-  const content = responses[Math.floor(Math.random() * responses.length)];
-  
-  const tokens = Math.floor(content.length / 4);
-  const cost = (tokens / 1000) * model.costPer1k;
-  
-  return {
-    content,
-    metadata: {
-      model: model.name,
-      tokens,
-      cost,
-      latency: 400 + Math.random() * 600,
-      confidence: model.confidence
-    }
-  };
+  return { content: fullContent, metadata };
 }
 
 export async function* streamResponse(prompt, options = {}) {
   const modelId = options.model || state.routeModelForTask(prompt);
   const model = state.getModelById(modelId) || state.activeModels[0];
   
-  yield { type: 'debug', data: `Routing to ${model.name}` };
   yield { type: 'start', model: model.name };
   
-  const response = await sendToAI(prompt, options);
-  const words = response.content.split(' ');
-  
-  for (const word of words) {
-    yield { type: 'chunk', text: word + ' ' };
-    await sleep(20 + Math.random() * 30);
+  let tokenCount = 0;
+  const startTime = Date.now();
+
+  try {
+    let stream;
+    
+    if (model.provider === 'Google') {
+      stream = streamGemini(prompt, modelId);
+    } else if (model.provider === 'Anthropic') {
+      stream = streamAnthropic(prompt, modelId);
+    } else if (model.provider === 'OpenAI') {
+      stream = streamOpenAICompatible(prompt, modelId, 'OpenAI', 'https://api.openai.com/v1/chat/completions');
+    } else if (model.provider === 'Groq') {
+      const groqModel = modelId === 'llama-3-3-groq' ? 'llama-3.3-70b-versatile' : modelId;
+      stream = streamOpenAICompatible(prompt, groqModel, 'Groq', 'https://api.groq.com/openai/v1/chat/completions');
+    } else if (model.provider === 'OpenRouter') {
+      const orModel = modelId === 'openrouter-auto' ? 'openrouter/auto' : modelId;
+      stream = streamOpenAICompatible(prompt, orModel, 'OpenRouter', 'https://openrouter.ai/api/v1/chat/completions');
+    } else if (model.provider === 'DeepSeek') {
+      const dsModel = modelId === 'deepseek-r1' ? 'deepseek-reasoner' : modelId;
+      stream = streamOpenAICompatible(prompt, dsModel, 'DeepSeek', 'https://api.deepseek.com/v1/chat/completions');
+    } else {
+      // Fallback to mock
+      yield { type: 'chunk', text: `Mock response for ${model.name}. Provider not fully wired yet.` };
+    }
+
+    if (stream) {
+      for await (const event of stream) {
+        if (event.type === 'chunk') {
+          tokenCount += Math.ceil(event.text.length / 4);
+          yield event;
+        } else if (event.type === 'debug') {
+          yield event;
+        }
+      }
+    }
+  } catch (err) {
+    yield { type: 'chunk', text: `\n[Error: ${err.message}]` };
   }
   
-  state.incrementMessageCount(response.metadata.tokens, response.metadata.cost);
-  state.addToConversation('assistant', response.content, model.name);
+  const latency = Date.now() - startTime;
+  const cost = (tokenCount / 1000) * model.costPer1k;
   
-  yield { type: 'end', metadata: response.metadata };
+  const metadata = {
+    model: model.name,
+    tokens: tokenCount,
+    cost,
+    latency,
+    confidence: model.confidence
+  };
+
+  state.incrementMessageCount(tokenCount, cost);
+  
+  yield { type: 'end', metadata };
 }
 
 export async function getResponseFromModel(prompt, modelId) {
