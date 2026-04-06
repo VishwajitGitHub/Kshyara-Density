@@ -1,0 +1,31 @@
+{
+  "name": "@workspace/kshyara-cli",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "KSHYARA CLI - Next-generation AI command-line assistant",
+  "bin": {
+    "kshyara": "./cli/index.js"
+  },
+  "scripts": {
+    "start": "node cli/index.js",
+    "dev": "node cli/index.js",
+    "setup": "npm link"
+  },
+  "dependencies": {
+    "@google/genai": "^1.17.0",
+    "ansi-escapes": "^7.0.0",
+    "boxen": "^8.0.1",
+    "chalk": "^5.4.1",
+    "cli-cursor": "^5.0.0",
+    "cli-highlight": "^2.1.11",
+    "conf": "^13.1.0",
+    "figures": "^6.1.0",
+    "gradient-string": "^3.0.0",
+    "inquirer": "^12.7.0",
+    "ora": "^8.2.0",
+    "readline": "^1.3.0",
+    "string-width": "^7.2.0",
+    "wrap-ansi": "^9.0.0"
+  }
+}

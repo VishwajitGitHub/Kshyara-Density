@@ -1,11 +1,33 @@
-<div align="center">
+# KSHYARA CLI
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+The most advanced multi-model AI orchestrator terminal tool ever built.
 
-  <h1>Built with AI Studio</h2>
+## Features
+- **Multi-Model Orchestration**: Query GPT-4o, Claude 3.7, Gemini 2.5, DeepSeek R1, and more simultaneously.
+- **Combiner Engine**: Automatically scores, ranks, and merges the best answers from multiple models.
+- **Debate Mode**: Watch AI models argue opposing positions while a critic selects the winner.
+- **Agent Swarm**: Planner, Coder, Critic, and Refiner agents working together.
+- **Persistent Loop**: Never exits until you type `/exit` or `/quit`.
+- **Rich UI**: Gradients, spinners, tables, and real-time streaming output.
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## Installation
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-</div>
+2. Link the CLI globally:
+   ```bash
+   npm link
+   # or
+   make link
+   ```
+
+3. Start the CLI:
+   ```bash
+   kshyara
+   ```
+
+## Usage
+Type `/help` inside the CLI to see all available commands and keyboard shortcuts.
