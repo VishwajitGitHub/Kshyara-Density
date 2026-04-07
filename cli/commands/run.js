@@ -1,33 +1,55 @@
 import { runCode } from '../../tools/code/codeRunner.js';
-import { renderError, renderDivider } from '../ui/prompt.js';
+import { renderError, renderSuccess, renderDivider, renderInfo } from '../ui/prompt.js';
+import { state } from '../state/index.js';
 import chalk from 'chalk';
+import fs from 'fs';
+import path from 'path';
 
 export async function runCommand(args) {
-  const language = args[0];
-  const code = args.slice(1).join(' ');
-  
-  if (!language || !code) {
-    console.log(renderError('Usage: /run <language> <code>'));
+  if (args.length < 1) {
+    console.log(renderError('Usage: /run <language> <code> OR /run <filepath>'));
+    return;
+  }
+
+  let language = args[0];
+  let code = args.slice(1).join(' ');
+
+  // Check if the first argument is a file path
+  if (!code && fs.existsSync(path.resolve(process.cwd(), language))) {
+    const filePath = path.resolve(process.cwd(), language);
+    code = fs.readFileSync(filePath, 'utf8');
+    const ext = path.extname(filePath).substring(1);
+    language = ext === 'js' ? 'javascript' : 
+               ext === 'py' ? 'python' : 
+               ext === 'ts' ? 'typescript' : 
+               ext === 'sh' ? 'bash' : 
+               ext === 'rb' ? 'ruby' : ext;
+    console.log(renderInfo(`Running file: ${filePath} as ${language}`));
+  } else if (!code) {
+    console.log(renderError('Please provide code to execute or a valid file path.'));
     return;
   }
 
   console.log();
-  console.log(renderDivider(`Executing ${language} code`));
-  
+  console.log(renderDivider(`Execution: ${language}`));
+  console.log();
+
   try {
-    const startTime = Date.now();
     const result = await runCode(language, code);
-    const latency = Date.now() - startTime;
     
-    if (result.stdout) {
-      console.log(chalk.gray(result.stdout));
-    }
-    if (result.stderr) {
-      console.log(chalk.red(result.stderr));
+    console.log();
+    console.log(renderDivider('Execution Complete'));
+    
+    if (result.exitCode === 0) {
+      console.log(renderSuccess(`Exited with code 0 in ${result.duration}ms`));
+    } else {
+      console.log(renderError(`Exited with code ${result.exitCode} in ${result.duration}ms`));
     }
     
-    const statusColor = result.exitCode === 0 ? chalk.green : chalk.red;
-    console.log(renderDivider(`Execution finished in ${latency}ms with exit code ${statusColor(result.exitCode)}`));
+    // Add to context so AI knows what happened
+    const contextMsg = `User executed ${language} code.\nExit Code: ${result.exitCode}\nDuration: ${result.duration}ms\nStdout:\n${result.stdout}\nStderr:\n${result.stderr}`;
+    state.addToConversation('system', contextMsg);
+
   } catch (err) {
     console.log(renderError(`Execution failed: ${err.message}`));
   }

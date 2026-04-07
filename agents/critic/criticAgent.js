@@ -2,11 +2,20 @@ import { BaseAgent } from '../base/baseAgent.js';
 
 export class CriticAgent extends BaseAgent {
   constructor() {
-    super('Critic', 'Harsh but fair code and logic reviewer', 'claude-3-7');
+    // Default to Claude 3.7 for deep reasoning and critique
+    super('Critic', 'Code Reviewer & Security Auditor', 'claude-3-7');
   }
 
   getSystemPrompt() {
-    return `You are the Critic Agent. Review the provided output for bugs, security flaws, logical errors, and inefficiencies. Be direct and point out specific flaws. Do not rewrite the whole code, just provide the critique and suggest fixes.`;
+    return `You are the Critic Agent. Your job is to review the provided code and execution results.
+Look for:
+1. Bugs and logical errors
+2. Security vulnerabilities
+3. Performance bottlenecks
+4. Edge cases not handled
+5. Adherence to best practices
+
+Provide a harsh but constructive critique. If the code is perfect, say so, but always look for improvements.`;
   }
 }
 

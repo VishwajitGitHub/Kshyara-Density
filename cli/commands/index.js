@@ -28,6 +28,8 @@ import { catCommand } from './cat.js';
 import { contextCommand } from './context.js';
 import { resetCommand } from './reset.js';
 import { projectCommand } from './project.js';
+import { noteCommand } from './note.js';
+import { toolsCommand } from './tools.js';
 
 export const commands = {
   '/ask':     { handler: askCommand,     description: 'Ask a question with current model', usage: '/ask <prompt>', alias: ['/query']        },
@@ -40,19 +42,21 @@ export const commands = {
   '/run':     { handler: runCommand,     description: 'Execute code in sandbox', usage: '/run <lang> <code>', alias: ['/exec'] },
   '/file':    { handler: fileCommand,    description: 'Attach a file to context', usage: '/file <path>', alias: ['/read'] },
   '/project': { handler: projectCommand, description: 'Attach entire directory as context', usage: '/project', alias: ['/repo'] },
+  '/note':    { handler: noteCommand,    description: 'Add a note to long-term memory', usage: '/note <text>', alias: ['/save'] },
   '/cat':     { handler: catCommand,     description: 'Print file with syntax highlighting', usage: '/cat <path>', alias: ['/view'] },
   '/shell':   { handler: shellCommand,   description: 'Execute a shell command', usage: '/shell <cmd>', alias: ['/sh'] },
   '/search':  { handler: searchCommand,  description: 'Web search with cited sources', usage: '/search <query>', alias: ['/web', '/find'] },
   '/plugin':  { handler: pluginCommand,  description: 'Manage plugins', usage: '/plugin [list|toggle]', alias: ['/plugins'] },
+  '/tools':   { handler: toolsCommand,   description: 'List available tools', usage: '/tools [list]', alias: ['/tool'] },
   '/chat':    { handler: chatCommand,    description: 'Switch to chat mode', usage: '/chat'                            },
   '/models':  { handler: modelsCommand,  description: 'List and manage models', usage: '/models [list|toggle|set]', alias: ['/model', '/m']  },
   '/login':   { handler: loginCommand,   description: 'Set API key and username', usage: '/login', alias: ['/auth']         },
   '/config':  { handler: configCommand,  description: 'Manage configuration', usage: '/config [list|get|set|reset]', alias: ['/cfg']          },
   '/theme':   { handler: themeCommand,   description: 'Switch UI theme', usage: '/theme [name]'                            },
-  '/memory':  { handler: memoryCommand,  description: 'Manage session memory', usage: '/memory [list|set|get|clear]', alias: ['/mem']          },
+  '/memory':  { handler: memoryCommand,  description: 'Manage session memory', usage: '/memory [list|set|get|clear|save|search]', alias: ['/mem']          },
   '/context': { handler: contextCommand, description: 'Manage conversation context', usage: '/context [view|clear]', alias: ['/ctx']          },
   '/history': { handler: historyCommand, description: 'Browse command history', usage: '/history', alias: ['/log']          },
-  '/export':  { handler: exportCommand,  description: 'Export session to file', usage: '/export [format]', alias: ['/save']         },
+  '/export':  { handler: exportCommand,  description: 'Export session to file', usage: '/export [format]'         },
   '/cost':    { handler: costCommand,    description: 'Show session cost breakdown', usage: '/cost', alias: ['/usage']        },
   '/inspect': { handler: inspectCommand, description: 'Inspect execution pipeline', usage: '/inspect', alias: ['/trace']        },
   '/debug':   { handler: debugCommand,   description: 'Toggle debug mode', usage: '/debug [on|off|status]', alias: ['/dbg']          },
