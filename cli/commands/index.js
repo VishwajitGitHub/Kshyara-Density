@@ -30,6 +30,7 @@ import { resetCommand } from './reset.js';
 import { projectCommand } from './project.js';
 import { noteCommand } from './note.js';
 import { toolsCommand } from './tools.js';
+import { gitCommand } from './git.js';
 
 export const commands = {
   '/ask':     { handler: askCommand,     description: 'Ask a question with current model', usage: '/ask <prompt>', alias: ['/query']        },
@@ -45,6 +46,7 @@ export const commands = {
   '/note':    { handler: noteCommand,    description: 'Add a note to long-term memory', usage: '/note <text>', alias: ['/save'] },
   '/cat':     { handler: catCommand,     description: 'Print file with syntax highlighting', usage: '/cat <path>', alias: ['/view'] },
   '/shell':   { handler: shellCommand,   description: 'Execute a shell command', usage: '/shell <cmd>', alias: ['/sh'] },
+  '/git':     { handler: gitCommand,     description: 'Run git commands with AI explanation', usage: '/git <cmd>', alias: ['/g'] },
   '/search':  { handler: searchCommand,  description: 'Web search with cited sources', usage: '/search <query>', alias: ['/web', '/find'] },
   '/plugin':  { handler: pluginCommand,  description: 'Manage plugins', usage: '/plugin [list|toggle]', alias: ['/plugins'] },
   '/tools':   { handler: toolsCommand,   description: 'List available tools', usage: '/tools [list]', alias: ['/tool'] },
