@@ -1,10 +1,10 @@
-#!/usr/bin/env tsx
+#!/usr/bin/env node
 
 /**
  * Kshyara's Density CLI
  * 100% Original TypeScript Implementation
  * 
- * Entry point for the application.
+ * The Ultimate All-in-One Autonomous Agent Handler.
  */
 
 import { DensityApp } from './app.js';
@@ -15,6 +15,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err) => {
-  console.error('Fatal Error:', err);
+  console.error('Fatal Core Error:', err);
   process.exit(1);
 });

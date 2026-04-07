@@ -1,4 +1,4 @@
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 import { brain } from '../core/brain.js';
 
 /**
@@ -8,10 +8,10 @@ import { brain } from '../core/brain.js';
 export async function runGitAssistant(args: string[]) {
   const subcmd = args[0];
 
-  UI.divider('AI Git Assistant');
+  DensityUI.divider('AI Git Assistant');
 
   if (subcmd === 'commit') {
-    UI.info('Analyzing staged changes...');
+    DensityUI.info('Analyzing staged changes...');
     await new Promise(r => setTimeout(r, 1000));
     
     const simulatedDiff = `
@@ -26,11 +26,11 @@ export async function runGitAssistant(args: string[]) {
     console.log(`  \x1b[32mSuggested Commit:\x1b[0m ${commitMsg}`);
     
     // In a real app, we would prompt to execute `git commit -m "..."`
-    UI.success('Commit message generated successfully.');
+    DensityUI.success('Commit message generated successfully.');
     brain.addMessage('assistant', `Generated git commit: ${commitMsg}`);
   } 
   else if (subcmd === 'pr') {
-    UI.info('Analyzing branch commits against main...');
+    DensityUI.info('Analyzing branch commits against main...');
     await new Promise(r => setTimeout(r, 1500));
     
     const prBody = `
@@ -47,9 +47,9 @@ This PR introduces the new Intelligence Engine and Security Engine to the core a
     `.trim();
 
     console.log(`\n\x1b[36m${prBody}\x1b[0m\n`);
-    UI.success('Pull Request description generated.');
+    DensityUI.success('Pull Request description generated.');
   }
   else {
-    UI.error('Usage: /git [commit|pr]');
+    DensityUI.error('Usage: /git [commit|pr]');
   }
 }

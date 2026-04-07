@@ -1,4 +1,4 @@
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 import { brain } from '../core/brain.js';
 
 /**
@@ -6,7 +6,7 @@ import { brain } from '../core/brain.js';
  * Implements Phase 3: Live display of tokens used and cost estimate.
  */
 export function showCostMonitor() {
-  UI.divider('Token & Cost Monitor');
+  DensityUI.divider('Token & Cost Monitor');
   
   const history = brain.getHistory();
   const totalTokens = history.reduce((acc, msg) => acc + (msg.tokens || 0), 0);
@@ -20,9 +20,9 @@ export function showCostMonitor() {
   console.log();
   
   if (totalTokens > 100000) {
-    UI.warning('Approaching context limit. Auto-compaction will trigger soon.');
+    DensityUI.warning('Approaching context limit. Auto-compaction will trigger soon.');
   } else {
-    UI.success('Context window is healthy.');
+    DensityUI.success('Context window is healthy.');
   }
   console.log();
 }

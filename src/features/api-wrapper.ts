@@ -1,4 +1,4 @@
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 import { brain } from '../core/brain.js';
 
 /**
@@ -7,14 +7,14 @@ import { brain } from '../core/brain.js';
  */
 export async function wrapApi(args: string[]) {
   if (args.length === 0 || args[0] !== 'wrap' || !args[1]) {
-    UI.error('Usage: /api wrap <openapi-url>');
+    DensityUI.error('Usage: /api wrap <openapi-url>');
     return;
   }
 
   const targetUrl = args[1];
 
-  UI.divider('Universal API Wrapper');
-  UI.info(`Targeting OpenAPI specification at: \x1b[36m${targetUrl}\x1b[0m`);
+  DensityUI.divider('Universal API Wrapper');
+  DensityUI.info(`Targeting OpenAPI specification at: \x1b[36m${targetUrl}\x1b[0m`);
 
   const steps = [
     'Fetching OpenAPI schema...',
@@ -46,5 +46,5 @@ export async function wrapApi(args: string[]) {
   const successMsg = `Successfully wrapped API from ${targetUrl}. The autonomous agent can now use these endpoints as native tools.`;
   brain.addMessage('system', `New tools registered from API: ${endpoints.join(', ')}`);
   
-  UI.success(successMsg);
+  DensityUI.success(successMsg);
 }

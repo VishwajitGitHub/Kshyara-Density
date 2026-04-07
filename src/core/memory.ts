@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 
 /**
  * Mistake Memory
@@ -35,7 +35,7 @@ export class MemoryEngine {
   public recordMistake(mistake: string) {
     this.mistakes.push(mistake);
     this.saveMemory();
-    UI.info(`🧠 Logged mistake to long-term memory to avoid repeating.`);
+    DensityUI.info(`🧠 Logged mistake to long-term memory to avoid repeating.`);
   }
 
   public getMistakesContext(): string {

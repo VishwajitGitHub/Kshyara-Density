@@ -1,4 +1,4 @@
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 import { brain } from '../core/brain.js';
 
 export interface SearchResult {
@@ -15,12 +15,12 @@ export class WebResearcher {
   
   public async research(topic: string) {
     if (!topic) {
-      UI.error('Usage: /research <topic>');
+      DensityUI.error('Usage: /research <topic>');
       return;
     }
 
-    UI.divider('Advanced Web Researcher');
-    UI.info(`Initiating deep research on: "${topic}"`);
+    DensityUI.divider('Advanced Web Researcher');
+    DensityUI.info(`Initiating deep research on: "${topic}"`);
 
     // Simulate Agentic Loop
     const steps = [
@@ -66,7 +66,7 @@ The trajectory of ${topic} indicates that CLI-based AI operating systems will be
     console.log();
     
     brain.addMessage('assistant', report);
-    UI.success('Research complete and added to context memory.');
+    DensityUI.success('Research complete and added to context memory.');
   }
 }
 

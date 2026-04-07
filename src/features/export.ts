@@ -1,35 +1,38 @@
 import fs from 'fs';
 import path from 'path';
-import { brain } from '../core/brain.js';
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 
-/**
- * Exports the current chat history to a beautifully formatted Markdown file.
- */
-export function exportHistoryToMarkdown(filename?: string) {
-  const history = brain.getHistory();
-  
-  if (history.length === 0) {
-    UI.warning('No chat history to export.');
-    return;
+export class MarkdownExporter {
+  public exportHistory(history: any[], filename?: string) {
+    const name = filename || `density-session-${Date.now()}.md`;
+    const filePath = path.join(process.cwd(), name);
+    
+    let md = `# Density Chat Session Export\n\nGenerated on: ${new Date().toISOString()}\n\n---\n\n`;
+
+    for (const msg of history) {
+      const role = msg.role === 'user' ? '👤 User' : '🤖 Density';
+      md += `### ${role}\n${msg.content}\n\n---\n\n`;
+    }
+
+    try {
+      fs.writeFileSync(filePath, md, 'utf8');
+      DensityUI.success(`History exported successfully to: ${filePath}`);
+    } catch (err: any) {
+      DensityUI.error(`Export failed: ${err.message}`);
+    }
   }
 
-  const dateStr = new Date().toISOString().replace(/[:.]/g, '-');
-  const targetFile = filename ? path.resolve(process.cwd(), filename) : path.resolve(process.cwd(), `density-export-${dateStr}.md`);
-
-  let mdContent = `# Kshyara's Density - Session Export\n\n`;
-  mdContent += `*Exported on: ${new Date().toLocaleString()}*\n\n---\n\n`;
-
-  for (const msg of history) {
-    const roleName = msg.role === 'user' ? '👤 **You**' : msg.role === 'assistant' ? '🤖 **Density AI**' : '⚙️ **System**';
-    mdContent += `### ${roleName} \n_${msg.timestamp.toLocaleTimeString()}_\n\n`;
-    mdContent += `${msg.content}\n\n---\n\n`;
-  }
-
-  try {
-    fs.writeFileSync(targetFile, mdContent, 'utf8');
-    UI.success(`Chat history successfully exported to: ${targetFile}`);
-  } catch (err: any) {
-    UI.error(`Failed to export history: ${err.message}`);
+  public exportReport(report: string, topic: string) {
+    const safeTopic = topic.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+    const filePath = path.join(process.cwd(), `research-${safeTopic}.md`);
+    
+    try {
+      fs.writeFileSync(filePath, report, 'utf8');
+      DensityUI.success(`Research report exported to: ${filePath}`);
+    } catch (err: any) {
+      DensityUI.error(`Report export failed: ${err.message}`);
+    }
   }
 }
+
+export const exporter = new MarkdownExporter();

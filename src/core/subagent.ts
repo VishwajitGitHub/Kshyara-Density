@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 
 export interface AgentConfig {
   name: string;
@@ -51,7 +51,7 @@ temperature: 0.2
         const config = yaml.load(content) as AgentConfig;
         this.agents.set(config.name, config);
       } catch (e: any) {
-        UI.error(`Failed to load agent ${file}: ${e.message}`);
+        DensityUI.error(`Failed to load agent ${file}: ${e.message}`);
       }
     }
   }
@@ -67,13 +67,13 @@ temperature: 0.2
   public async spawn(name: string, task: string) {
     const agent = this.getAgent(name);
     if (!agent) {
-      UI.error(`Agent '${name}' not found.`);
+      DensityUI.error(`Agent '${name}' not found.`);
       return;
     }
 
-    UI.divider(`Agent: ${agent.name.toUpperCase()}`);
-    UI.info(`Model: ${agent.model} | Temp: ${agent.temperature}`);
-    UI.info(`Task: ${task}`);
+    DensityUI.divider(`Agent: ${agent.name.toUpperCase()}`);
+    DensityUI.info(`Model: ${agent.model} | Temp: ${agent.temperature}`);
+    DensityUI.info(`Task: ${task}`);
 
     // Simulate isolated execution
     process.stdout.write(`  \x1b[36m⟳\x1b[0m Initializing isolated memory...\r`);

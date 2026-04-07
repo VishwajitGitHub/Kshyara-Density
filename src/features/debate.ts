@@ -1,4 +1,4 @@
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 import { brain } from '../core/brain.js';
 
 /**
@@ -7,12 +7,12 @@ import { brain } from '../core/brain.js';
  */
 export async function runDebate(topic: string) {
   if (!topic) {
-    UI.error('Usage: /debate <topic>');
+    DensityUI.error('Usage: /debate <topic>');
     return;
   }
 
-  UI.divider('Multi-Agent Debate Mode');
-  UI.info(`Topic: "${topic}"`);
+  DensityUI.divider('Multi-Agent Debate Mode');
+  DensityUI.info(`Topic: "${topic}"`);
   
   const agents = [
     { name: 'Alpha (Proponent)', color: '\x1b[34m' }, // Blue
@@ -37,5 +37,5 @@ export async function runDebate(topic: string) {
   }
 
   brain.addMessage('assistant', `Debate concluded on: ${topic}. Verdict: ${dialogue[3].text}`);
-  UI.success('Debate synthesized and added to memory.');
+  DensityUI.success('Debate synthesized and added to memory.');
 }

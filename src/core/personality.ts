@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 
 /**
  * Personality System
@@ -18,7 +18,7 @@ export class PersonalityEngine {
   private loadSoul() {
     if (fs.existsSync(this.soulPath)) {
       this.personalityTraits = fs.readFileSync(this.soulPath, 'utf-8');
-      UI.info('🧬 Loaded AI Personality from soul.md');
+      DensityUI.info('🧬 Loaded AI Personality from soul.md');
     } else {
       // Create default soul
       const dir = path.dirname(this.soulPath);

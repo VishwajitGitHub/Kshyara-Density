@@ -1,0 +1,10 @@
+{
+  "name": "@kshyara/sdk",
+  "version": "1.0.0",
+  "description": "Kshyara Project SDK",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@kshyara/core": "workspace:*"
+  }
+}

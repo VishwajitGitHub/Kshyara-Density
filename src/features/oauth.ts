@@ -1,5 +1,5 @@
 import http from 'http';
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 import { state } from '../state.js';
 
 /**
@@ -7,13 +7,13 @@ import { state } from '../state.js';
  * Spins up a local server to catch the callback.
  */
 export async function startOAuthFlow() {
-  UI.divider('Authentication');
-  UI.info('Starting OAuth flow...');
+  DensityUI.divider('Authentication');
+  DensityUI.info('Starting OAuth flow...');
   
   const port = 3456;
   const authUrl = `http://localhost:${port}/login-mock`;
 
-  UI.info(`Please open the following URL in your browser to authenticate:`);
+  DensityUI.info(`Please open the following URL in your browser to authenticate:`);
   console.log(`\n  👉  \x1b[36m${authUrl}\x1b[0m\n`);
 
   return new Promise<void>((resolve) => {
@@ -43,7 +43,7 @@ export async function startOAuthFlow() {
         `);
         
         state.isAuthenticated = true;
-        UI.success('Successfully authenticated via OAuth!');
+        DensityUI.success('Successfully authenticated via OAuth!');
         server.close();
         resolve();
       } else {

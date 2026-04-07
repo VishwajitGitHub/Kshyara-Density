@@ -1,9 +1,10 @@
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 
 export type ModelTier = 'reasoning' | 'coding' | 'fast' | 'local';
 
-interface ModelConfig {
+export interface ModelConfig {
   id: string;
+  name: string;
   provider: string;
   tier: ModelTier;
   costPer1k: number;
@@ -11,14 +12,14 @@ interface ModelConfig {
 
 /**
  * Multi-Model Router
- * Implements Phase 2: Intelligent Routing based on task.
+ * Core logic for intelligent task distribution in Density.
  */
 export class Router {
   private models: ModelConfig[] = [
-    { id: 'deepseek-r1', provider: 'deepseek', tier: 'reasoning', costPer1k: 0.01 },
-    { id: 'claude-3.7-sonnet', provider: 'anthropic', tier: 'coding', costPer1k: 0.03 },
-    { id: 'gemini-2.5-flash', provider: 'google', tier: 'fast', costPer1k: 0.001 },
-    { id: 'llama-3', provider: 'ollama', tier: 'local', costPer1k: 0.0 }
+    { id: 'deepseek-r1', name: 'DeepSeek R1', provider: 'deepseek', tier: 'reasoning', costPer1k: 0.01 },
+    { id: 'claude-3.7-sonnet', name: 'Claude 3.7 Sonnet', provider: 'anthropic', tier: 'coding', costPer1k: 0.03 },
+    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'google', tier: 'fast', costPer1k: 0.001 },
+    { id: 'llama-3', name: 'Llama 3 (Local)', provider: 'ollama', tier: 'local', costPer1k: 0.0 }
   ];
 
   /**
@@ -38,7 +39,7 @@ export class Router {
 
     const selectedModel = this.models.find(m => m.tier === selectedTier) || this.models[2];
     
-    UI.info(`Router selected \x1b[36m${selectedModel.id}\x1b[0m for task type: \x1b[33m${selectedTier}\x1b[0m`);
+    DensityUI.info(`Router selected \x1b[36m${selectedModel.name}\x1b[0m for task type: \x1b[33m${selectedTier}\x1b[0m`);
     return selectedModel;
   }
 }

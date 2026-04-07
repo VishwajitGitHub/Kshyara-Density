@@ -1,4 +1,4 @@
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 import { brain } from '../core/brain.js';
 
 /**
@@ -8,8 +8,8 @@ import { brain } from '../core/brain.js';
 export async function runAnalyzer(args: string[]) {
   const target = args[0] || '.';
 
-  UI.divider('Code Quality Analyzer');
-  UI.info(`Scanning target: \x1b[33m${target}\x1b[0m`);
+  DensityUI.divider('Code Quality Analyzer');
+  DensityUI.info(`Scanning target: \x1b[33m${target}\x1b[0m`);
 
   const steps = [
     'Parsing Abstract Syntax Trees (AST)...',
@@ -44,5 +44,5 @@ The current modular structure (\`src/core\`, \`src/features\`) is excellent. How
   console.log();
 
   brain.addMessage('assistant', `Ran code quality analysis on ${target}. Found 2 critical issues and 1 warning.`);
-  UI.success('Analysis complete. Added to context memory.');
+  DensityUI.success('Analysis complete. Added to context memory.');
 }

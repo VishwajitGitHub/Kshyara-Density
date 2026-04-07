@@ -1,4 +1,4 @@
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 
 /**
  * Intelligence Engine
@@ -12,7 +12,7 @@ export class IntelligenceEngine {
   public optimizePrompt(rawPrompt: string): string {
     if (rawPrompt.length < 10) return rawPrompt; // Too short to optimize
     
-    UI.info('🧠 Auto-optimizing prompt for maximum clarity...');
+    DensityUI.info('🧠 Auto-optimizing prompt for maximum clarity...');
     
     // Simulated optimization logic
     let optimized = rawPrompt;

@@ -1,24 +1,15 @@
 import readline from 'readline';
-import { UI } from './ui.js';
+import { DensityUI } from './ui.js';
 import { brain } from './core/brain.js';
 import { router } from './core/router.js';
-import { subagents } from './core/subagent.js';
-import { hooks } from './core/hooks.js';
 import { intelligence } from './core/intelligence.js';
 import { security } from './core/security.js';
 import { personality } from './core/personality.js';
 import { memory } from './core/memory.js';
-import { researcher } from './tools/web-search.js';
-import { mcpClient } from './mcp/client.js';
-import { exportHistoryToMarkdown } from './features/export.js';
-import { startOAuthFlow } from './features/oauth.js';
-import { runAutonomousAgent } from './features/agent.js';
-import { runDebate } from './features/debate.js';
-import { showCostMonitor } from './features/monitor.js';
-import { runSimulation } from './features/simulator.js';
-import { wrapApi } from './features/api-wrapper.js';
-import { runGitAssistant } from './features/git.js';
-import { runAnalyzer } from './features/analyzer.js';
+import { researcher } from './features/researcher.js';
+import { autonomousSwarm } from './features/agent.js';
+import { exporter } from './features/export.js';
+import { simulator } from './features/simulator.js';
 
 export class DensityApp {
   private rl: readline.Interface;
@@ -27,18 +18,20 @@ export class DensityApp {
     this.rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
-      prompt: UI.getPrompt()
+      prompt: DensityUI.getPrompt()
     });
   }
 
   public async initialize() {
-    UI.printBanner();
-    hooks.execute('SessionStart');
+    DensityUI.banner();
+    DensityUI.info('Initializing Density Neural Core...');
     
-    // Inject personality and mistake memory into the brain's system prompt
-    const systemContext = personality.getSystemPrompt() + memory.getMistakesContext();
-    brain.addMessage('system', systemContext);
-
+    // Inject personality and memory context
+    brain.addMessage('system', personality.getSystemPrompt());
+    const mistakes = memory.getMistakesContext();
+    if (mistakes) brain.addMessage('system', mistakes);
+    
+    DensityUI.success('System Ready.');
     this.setupEventHandlers();
     this.rl.prompt();
   }
@@ -47,166 +40,97 @@ export class DensityApp {
     this.rl.on('line', async (line) => {
       const input = line.trim();
       if (input) {
-        await this.handleInput(input);
+        // Security check
+        if (security.isCommandSafe(input)) {
+          await this.handleInput(input);
+        }
       }
       this.rl.prompt();
     });
 
     this.rl.on('close', () => {
       console.log('\n');
-      hooks.execute('SessionEnd');
-      UI.info('Shutting down Kshyara\\'s Density. Goodbye!');
+      DensityUI.info("Shutting down Kshyara's Density. Goodbye!");
       process.exit(0);
     });
   }
 
   private async handleInput(input: string) {
-    // Handle special prefixes
-    if (input.startsWith('!')) {
-      return this.handleShellCommand(input.substring(1));
-    }
-    if (input.startsWith('@')) {
-      return this.handleSubagentCommand(input.substring(1));
+    if (input.startsWith('/')) {
+      const [cmd, ...args] = input.split(' ');
+      return this.handleCommand(cmd.toLowerCase(), args);
     }
 
-    brain.addMessage('user', input);
+    // Adjust mood based on input
     personality.adjustMood(input);
+    
+    // Auto-optimize prompt
+    const optimizedInput = intelligence.optimizePrompt(input);
+    
+    brain.addMessage('user', optimizedInput);
+    await this.generateResponse(optimizedInput);
+  }
 
-    const [cmd, ...args] = input.split(' ');
-
+  private async handleCommand(cmd: string, args: string[]) {
     try {
-      switch (cmd.toLowerCase()) {
+      switch (cmd) {
         case '/help':
           this.showHelp();
-          break;
-        case '/login':
-          await startOAuthFlow();
-          break;
-        case '/export':
-          exportHistoryToMarkdown(args[0]);
           break;
         case '/research':
           await researcher.research(args.join(' '));
           break;
         case '/agent':
-          await runAutonomousAgent(args.join(' '));
-          break;
-        case '/debate':
-          await runDebate(args.join(' '));
+          await autonomousSwarm.executeTask(args.join(' '));
           break;
         case '/simulate':
-          await runSimulation(args);
+          await simulator.runSimulation(args.join(' '));
           break;
-        case '/api':
-          await wrapApi(args);
-          break;
-        case '/git':
-          await runGitAssistant(args);
-          break;
-        case '/analyze':
-          await runAnalyzer(args);
-          break;
-        case '/cost':
-          showCostMonitor();
-          break;
-        case '/mcp':
-          if (args[0] === 'connect') {
-            await mcpClient.connect(args[1], args.slice(2).join(' '));
-          } else {
-            mcpClient.list();
-          }
-          break;
-        case '/agents':
-          if (args[0] === 'spawn') {
-            await subagents.spawn(args[1], args.slice(2).join(' '));
-          } else {
-            console.log(subagents.listAgents());
-          }
+        case '/export':
+          exporter.exportHistory(brain.getHistory(), args[0]);
           break;
         case '/exit':
         case '/quit':
           this.rl.close();
           break;
         default:
-          if (cmd.startsWith('/')) {
-            UI.error(`Unknown command: ${cmd}. Type /help for available commands.`);
-          } else {
-            await this.simulateChatResponse(input);
-          }
+          DensityUI.error(`Unknown command: ${cmd}. Type /help for assistance.`);
       }
     } catch (err: any) {
-      UI.error(`An error occurred: ${err.message}`);
-      // Auto-log mistakes to memory
-      memory.recordMistake(`Failed executing command '${cmd}': ${err.message}`);
+      DensityUI.error(`Command failed: ${err.message}`);
     }
   }
 
-  private async handleShellCommand(cmd: string) {
-    // Command Risk Detection
-    if (!security.isCommandSafe(cmd)) {
-      return; // Blocked by security engine
-    }
-
-    UI.info(`Executing shell command: ${cmd}`);
-    // In a real app, use child_process.execSync here
-    console.log(`\x1b[90m$ ${cmd}\n(Simulated output)\x1b[0m\n`);
-  }
-
-  private async handleSubagentCommand(input: string) {
-    const [agentName, ...taskArgs] = input.split(' ');
-    const task = taskArgs.join(' ');
-    await subagents.spawn(agentName, task);
-  }
-
-  private async simulateChatResponse(input: string) {
-    // Intent Prediction
-    const predictedAction = intelligence.predictNextAction(input);
-    if (predictedAction) {
-      UI.info(`🔮 Intent Prediction: You might want to run \x1b[33m${predictedAction}\x1b[0m next.`);
-    }
-
-    // Auto Prompt Optimizer
-    const optimizedPrompt = intelligence.optimizePrompt(input);
-
-    // Route to the best model based on the prompt
-    const model = router.route(optimizedPrompt);
+  private async generateResponse(input: string) {
+    const model = router.route(input);
+    DensityUI.statusBar('Thinking...', model.name);
     
-    hooks.execute('PreResponse');
-    
-    process.stdout.write(`  \x1b[36m⟳\x1b[0m Generating response via ${model.id}...\r`);
     await new Promise(r => setTimeout(r, 1000));
-    process.stdout.write(' '.repeat(50) + '\r'); // clear line
-
+    
     const confidence = intelligence.calculateConfidence();
     const moodPrefix = personality.getMoodPrefix();
-
-    const response = `${moodPrefix} I processed your optimized request using **${model.id}** (Tier: ${model.tier}).\n\nYour input was: "${input}".\n\nUse \`/help\` to explore my advanced capabilities like \`/research\` or \`/agent\`.\n\n\x1b[90m[Confidence Score: ${confidence}%]\x1b[0m`;
+    const response = `${moodPrefix} I've analyzed your request using **${model.name}**. For complex tasks, try using \`/research\` for deep web analysis or \`/agent\` for autonomous execution. (Confidence: ${confidence}%)`;
     
     brain.addMessage('assistant', response);
-    console.log(`\n  \x1b[36mDensity\x1b[0m › ${response.replace(/\n/g, '\n    ')}\n`);
-    
-    hooks.execute('PostResponse');
+    DensityUI.box(response, 'DENSITY RESPONSE');
+
+    const nextAction = intelligence.predictNextAction(input);
+    if (nextAction) {
+      DensityUI.info(`Recommended next step: \x1b[36m${nextAction}\x1b[0m`);
+    }
   }
 
   private showHelp() {
-    UI.divider('Density Commands');
+    DensityUI.divider('Density Commands');
     const commands = [
-      { cmd: '/help', desc: 'Show this help menu' },
-      { cmd: '/login', desc: 'Authenticate via OAuth 2.0' },
-      { cmd: '/research <topic>', desc: 'Deep web research and synthesis' },
-      { cmd: '/agent <task>', desc: 'Trigger autonomous agent swarm' },
-      { cmd: '/debate <topic>', desc: 'Trigger multi-agent debate mode' },
-      { cmd: '/simulate <scenario>', desc: 'Run predictive simulation engine' },
-      { cmd: '/api wrap <url>', desc: 'Convert OpenAPI spec to CLI tools' },
-      { cmd: '/git [commit|pr]', desc: 'AI Git Assistant (auto-commit, PRs)' },
-      { cmd: '/analyze [path]', desc: 'Code Quality Analyzer & Arch Advisor' },
-      { cmd: '/agents spawn <name>', desc: 'Spawn a specific subagent (e.g., debugger)' },
-      { cmd: '/mcp [list|connect]', desc: 'Manage MCP tool servers' },
-      { cmd: '/cost', desc: 'View live token usage and cost estimate' },
-      { cmd: '/export [filename]', desc: 'Export chat history to Markdown' },
-      { cmd: '!<command>', desc: 'Execute a shell command directly (Secured)' },
-      { cmd: '@<agent> <task>', desc: 'Send a task directly to a subagent' },
-      { cmd: '/exit', desc: 'Quit the application' }
+      { cmd: '/research <topic>', desc: 'Deep autonomous web research & synthesis' },
+      { cmd: '/agent <task>', desc: 'Trigger self-healing multi-agent swarm' },
+      { cmd: '/simulate <scen>', desc: 'Run predictive scaling & cost simulations' },
+      { cmd: '/export [name]', desc: 'Export session history to Markdown' },
+      { cmd: '/memory [save|query]', desc: 'Manage long-term knowledge store' },
+      { cmd: '/status', desc: 'View system health & model routing stats' },
+      { cmd: '/help', desc: 'Show this advanced command menu' },
+      { cmd: '/exit', desc: 'Securely terminate the session' }
     ];
 
     commands.forEach(c => {

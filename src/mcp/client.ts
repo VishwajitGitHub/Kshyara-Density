@@ -1,4 +1,4 @@
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 
 /**
  * MCP (Model Context Protocol) Client
@@ -8,7 +8,7 @@ export class McpClient {
   private servers: Map<string, any> = new Map();
 
   public list() {
-    UI.divider('MCP Servers (Model Context Protocol)');
+    DensityUI.divider('MCP Servers (Model Context Protocol)');
     if (this.servers.size === 0) {
       console.log('  \x1b[90mNo MCP servers connected.\x1b[0m');
       console.log('  \x1b[90mUse /mcp connect <name> <command> to initialize.\x1b[0m');
@@ -21,16 +21,16 @@ export class McpClient {
   }
 
   public async connect(name: string, command: string) {
-    UI.info(`Connecting to MCP server '${name}' via stdio...`);
+    DensityUI.info(`Connecting to MCP server '${name}' via stdio...`);
     
     // Simulate connection delay
     await new Promise(r => setTimeout(r, 1000));
     
     this.servers.set(name, { command, status: 'connected' });
-    UI.success(`Successfully established MCP connection to: ${name}`);
+    DensityUI.success(`Successfully established MCP connection to: ${name}`);
     
     // Simulate fetching tools
-    UI.info(`Discovered 3 tools from ${name}: [read_db, write_db, list_tables]`);
+    DensityUI.info(`Discovered 3 tools from ${name}: [read_db, write_db, list_tables]`);
   }
 }
 

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 
 export interface ContextMessage {
   role: 'user' | 'assistant' | 'system';
@@ -31,7 +31,7 @@ export class Brain {
     if (fs.existsSync(projectContextPath)) {
       const content = fs.readFileSync(projectContextPath, 'utf-8');
       this.addMessage('system', `Project Context:\n${content}`);
-      UI.info('Loaded project context from .kshyara/KSHYARA.md');
+      DensityUI.info('Loaded project context from .kshyara/KSHYARA.md');
     } else {
       // Create default if it doesn't exist
       const dir = path.dirname(projectContextPath);
@@ -61,7 +61,7 @@ export class Brain {
    * Summarizes older messages to save context window.
    */
   private autoCompact() {
-    UI.warning('Context window reaching limit. Auto-compacting memory...');
+    DensityUI.warning('Context window reaching limit. Auto-compacting memory...');
     
     // Keep system prompts and last 5 messages, summarize the rest
     const systemMessages = this.history.filter(m => m.role === 'system');
@@ -79,7 +79,7 @@ export class Brain {
 
       this.history = [...systemMessages, summaryMessage, ...recentMessages];
       this.recalculateTokens();
-      UI.success('Memory compacted successfully.');
+      DensityUI.success('Memory compacted successfully.');
     }
   }
 

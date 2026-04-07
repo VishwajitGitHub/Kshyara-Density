@@ -1,4 +1,4 @@
-import { UI } from '../ui.js';
+import { DensityUI } from '../ui.js';
 
 /**
  * Security Engine
@@ -22,14 +22,14 @@ export class SecurityEngine {
     
     for (const pattern of this.dangerousPatterns) {
       if (pattern.test(trimmed)) {
-        UI.error(`🚨 SECURITY ALERT: Blocked highly dangerous command execution: \x1b[31m${cmd}\x1b[0m`);
+        DensityUI.error(`🚨 SECURITY ALERT: Blocked highly dangerous command execution: \x1b[31m${cmd}\x1b[0m`);
         return false;
       }
     }
 
     // Smart Permission Engine: Ask for sudo
     if (trimmed.startsWith('sudo ')) {
-      UI.warning(`⚠️ Command requires elevated privileges: ${cmd}`);
+      DensityUI.warning(`⚠️ Command requires elevated privileges: ${cmd}`);
       // In a real app, we would prompt the user here: "Allow execution? (y/N)"
     }
 

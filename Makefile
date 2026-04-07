@@ -1,14 +1,16 @@
-.PHONY: install link dev start
-
-install:
-	npm install
-
-link:
-	npm link
-	@echo "KSHYARA CLI is now linked globally! Type 'kshyara' to start."
+.PHONY: dev build lint test clean
 
 dev:
 	npm run dev
 
-start:
-	npm start
+build:
+	npm run build
+
+lint:
+	npm run lint
+
+test:
+	npm run test
+
+clean:
+	npm run clean
