@@ -12,6 +12,11 @@ Inspired by the best features of `gemini-cli` and `openclaw`, Density acts as yo
 - **Simulation Engine (`/simulate`)**: Run predictive stress tests and Monte Carlo simulations on infrastructure, scaling, or business logic.
 - **Universal API Wrapper (`/api wrap`)**: Automatically fetch an OpenAPI specification and convert it into native CLI tools for the agent to use autonomously.
 - **Multi-Agent Debate Mode (`/debate`)**: Watch multiple AI personas argue opposing sides of a topic before a Judge synthesizes the final verdict.
+- **Intelligence Engine**: Auto-optimizes your prompts, predicts your next intent, and attaches confidence scores to responses.
+- **Personality & Memory Engine**: The AI adjusts its mood based on context and learns from past mistakes (saved in `.kshyara/mistakes.json`).
+- **Security Engine**: Blocks dangerous shell commands (e.g., `rm -rf /`) and warns on elevated privileges.
+- **AI Git Assistant (`/git`)**: Automatically generates commit messages and PR descriptions based on staged changes.
+- **Code Quality Analyzer (`/analyze`)**: Scans ASTs to detect bad practices and provides architectural advice.
 - **Token & Cost Monitor (`/cost`)**: Live tracking of your session's token usage and estimated API costs.
 - **Lifecycle Hooks System**: Register commands to run automatically at `SessionStart`, `PreResponse`, `PostResponse`, and `SessionEnd`.
 - **Model Context Protocol (MCP) (`/mcp`)**: Connect to external tools and databases using the standard MCP protocol.
@@ -44,6 +49,8 @@ Inspired by the best features of `gemini-cli` and `openclaw`, Density acts as yo
 - `/simulate <scenario>`: Run the predictive simulation engine.
 - `/api wrap <url>`: Convert an OpenAPI spec into CLI tools.
 - `/debate <topic>`: Trigger the multi-agent debate mode.
+- `/git [commit|pr]`: Trigger the AI Git Assistant.
+- `/analyze [path]`: Run the Code Quality Analyzer.
 - `/cost`: View live token usage and cost estimate.
 - `/mcp [list|connect]`: Manage external MCP tool servers.
 - `/export [filename]`: Export the current session to Markdown.
@@ -56,10 +63,8 @@ Density is built with a modern, scalable architecture:
 - `src/index.ts`: The bootstrap entry point.
 - `src/app.ts`: The core REPL loop and terminal handler.
 - `src/ui.ts`: The central UI rendering engine (gradients, boxes, chalk).
-- `src/core/brain.ts`: Session state, memory, and auto-compaction.
-- `src/core/router.ts`: Intelligent multi-model routing.
-- `src/core/hooks.ts`: Lifecycle hooks manager.
-- `src/features/`: Isolated feature modules (researcher, agent, debate, simulator, api-wrapper, monitor, oauth, mcp, export).
+- `src/core/`: Brain, Router, Intelligence, Security, Personality, Memory, Hooks.
+- `src/features/`: Isolated feature modules (researcher, agent, debate, simulator, api-wrapper, git, analyzer, monitor, oauth, mcp, export).
 
 ## License
 

@@ -4,6 +4,10 @@ import { brain } from './core/brain.js';
 import { router } from './core/router.js';
 import { subagents } from './core/subagent.js';
 import { hooks } from './core/hooks.js';
+import { intelligence } from './core/intelligence.js';
+import { security } from './core/security.js';
+import { personality } from './core/personality.js';
+import { memory } from './core/memory.js';
 import { researcher } from './tools/web-search.js';
 import { mcpClient } from './mcp/client.js';
 import { exportHistoryToMarkdown } from './features/export.js';
@@ -13,6 +17,8 @@ import { runDebate } from './features/debate.js';
 import { showCostMonitor } from './features/monitor.js';
 import { runSimulation } from './features/simulator.js';
 import { wrapApi } from './features/api-wrapper.js';
+import { runGitAssistant } from './features/git.js';
+import { runAnalyzer } from './features/analyzer.js';
 
 export class DensityApp {
   private rl: readline.Interface;
@@ -28,6 +34,11 @@ export class DensityApp {
   public async initialize() {
     UI.printBanner();
     hooks.execute('SessionStart');
+    
+    // Inject personality and mistake memory into the brain's system prompt
+    const systemContext = personality.getSystemPrompt() + memory.getMistakesContext();
+    brain.addMessage('system', systemContext);
+
     this.setupEventHandlers();
     this.rl.prompt();
   }
@@ -59,6 +70,7 @@ export class DensityApp {
     }
 
     brain.addMessage('user', input);
+    personality.adjustMood(input);
 
     const [cmd, ...args] = input.split(' ');
 
@@ -87,6 +99,12 @@ export class DensityApp {
           break;
         case '/api':
           await wrapApi(args);
+          break;
+        case '/git':
+          await runGitAssistant(args);
+          break;
+        case '/analyze':
+          await runAnalyzer(args);
           break;
         case '/cost':
           showCostMonitor();
@@ -118,10 +136,17 @@ export class DensityApp {
       }
     } catch (err: any) {
       UI.error(`An error occurred: ${err.message}`);
+      // Auto-log mistakes to memory
+      memory.recordMistake(`Failed executing command '${cmd}': ${err.message}`);
     }
   }
 
   private async handleShellCommand(cmd: string) {
+    // Command Risk Detection
+    if (!security.isCommandSafe(cmd)) {
+      return; // Blocked by security engine
+    }
+
     UI.info(`Executing shell command: ${cmd}`);
     // In a real app, use child_process.execSync here
     console.log(`\x1b[90m$ ${cmd}\n(Simulated output)\x1b[0m\n`);
@@ -134,8 +159,17 @@ export class DensityApp {
   }
 
   private async simulateChatResponse(input: string) {
+    // Intent Prediction
+    const predictedAction = intelligence.predictNextAction(input);
+    if (predictedAction) {
+      UI.info(`🔮 Intent Prediction: You might want to run \x1b[33m${predictedAction}\x1b[0m next.`);
+    }
+
+    // Auto Prompt Optimizer
+    const optimizedPrompt = intelligence.optimizePrompt(input);
+
     // Route to the best model based on the prompt
-    const model = router.route(input);
+    const model = router.route(optimizedPrompt);
     
     hooks.execute('PreResponse');
     
@@ -143,7 +177,10 @@ export class DensityApp {
     await new Promise(r => setTimeout(r, 1000));
     process.stdout.write(' '.repeat(50) + '\r'); // clear line
 
-    const response = `I processed your request using **${model.id}** (Tier: ${model.tier}).\n\nYour input was: "${input}".\n\nUse \`/help\` to explore my advanced capabilities like \`/research\` or \`/agent\`.`;
+    const confidence = intelligence.calculateConfidence();
+    const moodPrefix = personality.getMoodPrefix();
+
+    const response = `${moodPrefix} I processed your optimized request using **${model.id}** (Tier: ${model.tier}).\n\nYour input was: "${input}".\n\nUse \`/help\` to explore my advanced capabilities like \`/research\` or \`/agent\`.\n\n\x1b[90m[Confidence Score: ${confidence}%]\x1b[0m`;
     
     brain.addMessage('assistant', response);
     console.log(`\n  \x1b[36mDensity\x1b[0m › ${response.replace(/\n/g, '\n    ')}\n`);
@@ -161,11 +198,13 @@ export class DensityApp {
       { cmd: '/debate <topic>', desc: 'Trigger multi-agent debate mode' },
       { cmd: '/simulate <scenario>', desc: 'Run predictive simulation engine' },
       { cmd: '/api wrap <url>', desc: 'Convert OpenAPI spec to CLI tools' },
+      { cmd: '/git [commit|pr]', desc: 'AI Git Assistant (auto-commit, PRs)' },
+      { cmd: '/analyze [path]', desc: 'Code Quality Analyzer & Arch Advisor' },
       { cmd: '/agents spawn <name>', desc: 'Spawn a specific subagent (e.g., debugger)' },
       { cmd: '/mcp [list|connect]', desc: 'Manage MCP tool servers' },
       { cmd: '/cost', desc: 'View live token usage and cost estimate' },
       { cmd: '/export [filename]', desc: 'Export chat history to Markdown' },
-      { cmd: '!<command>', desc: 'Execute a shell command directly' },
+      { cmd: '!<command>', desc: 'Execute a shell command directly (Secured)' },
       { cmd: '@<agent> <task>', desc: 'Send a task directly to a subagent' },
       { cmd: '/exit', desc: 'Quit the application' }
     ];
