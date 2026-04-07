@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "KSHYARA CLI - Next-generation AI command-line assistant",
+  "description": "Kshyara Density CLI - Next-generation AI command-line assistant",
   "bin": {
     "kshyara": "./cli/index.js",
     "Kshyara": "./cli/index.js"

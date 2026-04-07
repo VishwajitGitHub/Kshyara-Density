@@ -1,11 +1,8 @@
 import { state } from '../state/index.js';
 import { renderSuccess } from '../ui/prompt.js';
-import { printWelcome } from '../ui/banner.js';
 
 export async function resetCommand(args) {
-  state.conversationHistory = [];
+  state.clearConversation();
   state.clearMemory();
-  process.stdout.write('\x1Bc');
-  printWelcome();
-  console.log(renderSuccess('Session reset. Context and memory cleared.'));
+  console.log(renderSuccess('Session completely reset (Context and Memory cleared).'));
 }

@@ -1,28 +1,27 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { renderError, renderDivider } from '../ui/prompt.js';
+import { execSync } from 'child_process';
+import { renderError, renderSuccess, renderDivider } from '../ui/prompt.js';
+import { state } from '../state/index.js';
 import chalk from 'chalk';
 
-const execAsync = promisify(exec);
-
 export async function shellCommand(args) {
-  const command = args.join(' ');
-  if (!command) {
+  if (args.length === 0) {
     console.log(renderError('Usage: /shell <command>'));
     return;
   }
 
-  console.log();
-  console.log(renderDivider(`Executing shell command`));
-  
+  const cmd = args.join(' ');
+  console.log(chalk.gray(`> ${cmd}\n`));
+
   try {
-    const { stdout, stderr } = await execAsync(command, { timeout: 30000 });
-    if (stdout) console.log(chalk.gray(stdout));
-    if (stderr) console.log(chalk.red(stderr));
-  } catch (err) {
-    if (err.stdout) console.log(chalk.gray(err.stdout));
-    if (err.stderr) console.log(chalk.red(err.stderr));
-    console.log(renderError(`Command failed with exit code ${err.code || 1}`));
+    const output = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+    if (output) console.log(output.trim());
+    else console.log(chalk.gray('(No output)'));
+    
+    state.addToConversation('system', `User ran shell command: ${cmd}\nOutput:\n${output}`);
+  } catch (error) {
+    const errOut = error.stderr ? error.stderr.toString().trim() : error.message;
+    console.log(renderError(errOut));
+    state.addToConversation('system', `User ran shell command: ${cmd}\nError:\n${errOut}`);
   }
   console.log();
 }
