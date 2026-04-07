@@ -5,6 +5,8 @@ import fs from 'fs';
 const CONFIG_DIR = path.join(os.homedir(), '.kshyara');
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 const SESSION_FILE = path.join(CONFIG_DIR, 'session.json');
+const MEMORY_FILE = path.join(CONFIG_DIR, 'memory.json');
+const HISTORY_FILE = path.join(CONFIG_DIR, 'history.json');
 
 const DEFAULT_CONFIG = {
   theme: 'kshyara-dark', verbose: false, defaultMode: 'chat', streamDelay: 15,
@@ -59,6 +61,40 @@ export function loadSession() {
 export function saveSession(session) {
   ensureDir();
   fs.writeFileSync(SESSION_FILE, JSON.stringify(session, null, 2));
+}
+
+export function loadMemory() {
+  ensureDir();
+  if (fs.existsSync(MEMORY_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf-8'));
+    } catch (e) {
+      return [];
+    }
+  }
+  return [];
+}
+
+export function saveMemory(memory) {
+  ensureDir();
+  fs.writeFileSync(MEMORY_FILE, JSON.stringify(memory, null, 2));
+}
+
+export function loadHistory() {
+  ensureDir();
+  if (fs.existsSync(HISTORY_FILE)) {
+    try {
+      return JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'));
+    } catch (e) {
+      return [];
+    }
+  }
+  return [];
+}
+
+export function saveHistory(history) {
+  ensureDir();
+  fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
 }
 
 export function getConfigPath() { return CONFIG_FILE; }

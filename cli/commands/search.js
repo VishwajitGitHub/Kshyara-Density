@@ -3,6 +3,7 @@ import { createProcessingSpinner } from '../ui/spinner.js';
 import { streamResponse } from '../utils/ai.js';
 import { streamOutput, printBox } from '../ui/output.js';
 import { renderError } from '../ui/prompt.js';
+import { state } from '../state/index.js';
 import chalk from 'chalk';
 
 export async function searchCommand(args) {
@@ -35,7 +36,8 @@ ${JSON.stringify(results, null, 2)}
 Synthesize these results into a comprehensive answer. Cite your sources using the URLs provided.
 `;
 
-    const gen = streamResponse(synthesisPrompt, { model: 'gpt-4o' });
+    const primaryModel = state.getActiveModels()[0]?.id || 'gpt-4o';
+    const gen = streamResponse(synthesisPrompt, { model: primaryModel });
     await streamOutput(gen);
 
   } catch (err) {

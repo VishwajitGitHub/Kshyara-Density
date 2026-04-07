@@ -1,6 +1,6 @@
 import { ensureApiKey } from '../manager/apiKeyManager.js';
 
-export async function* streamOpenAICompatible(prompt, modelId, providerName, baseUrl) {
+export async function* streamOpenAICompatible(messages, modelId, providerName, baseUrl) {
   const apiKey = await ensureApiKey(providerName);
 
   yield { type: 'debug', data: `Connecting to ${providerName} API...` };
@@ -13,7 +13,7 @@ export async function* streamOpenAICompatible(prompt, modelId, providerName, bas
     },
     body: JSON.stringify({
       model: modelId,
-      messages: [{ role: 'user', content: prompt }],
+      messages: messages,
       stream: true
     })
   });

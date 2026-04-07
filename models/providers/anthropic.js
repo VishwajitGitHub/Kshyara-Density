@@ -1,6 +1,6 @@
 import { ensureApiKey } from '../manager/apiKeyManager.js';
 
-export async function* streamAnthropic(prompt, modelId) {
+export async function* streamAnthropic(messages, modelId) {
   const apiKey = await ensureApiKey('Anthropic');
 
   yield { type: 'debug', data: `Connecting to Anthropic API...` };
@@ -17,7 +17,7 @@ export async function* streamAnthropic(prompt, modelId) {
     body: JSON.stringify({
       model: actualModel,
       max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }],
+      messages: messages,
       stream: true
     })
   });

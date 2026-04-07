@@ -19,9 +19,7 @@ export async function memoryCommand(args) {
     const val = args.slice(2).join(' ');
     if (!key || !val) return console.log(renderError('Usage: /memory set <key> <value>'));
     
-    const existing = state.memory.find(m => m.key === key);
-    if (existing) existing.value = val;
-    else state.addMemory(key, val);
+    state.updateMemory(key, val);
     
     console.log(renderSuccess(`Saved to memory: ${key}`));
     return;
@@ -37,7 +35,7 @@ export async function memoryCommand(args) {
   }
 
   if (subcmd === 'clear') {
-    state.memory = [];
+    state.clearMemory();
     console.log(renderSuccess('Memory cleared.'));
     return;
   }

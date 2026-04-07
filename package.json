@@ -5,7 +5,8 @@
   "type": "module",
   "description": "KSHYARA CLI - Next-generation AI command-line assistant",
   "bin": {
-    "kshyara": "./cli/index.js"
+    "kshyara": "./cli/index.js",
+    "Kshyara": "./cli/index.js"
   },
   "scripts": {
     "start": "node cli/index.js",

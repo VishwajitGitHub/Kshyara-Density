@@ -24,6 +24,10 @@ import { runCommand } from './run.js';
 import { fileCommand } from './file.js';
 import { shellCommand } from './shell.js';
 import { pluginCommand } from './plugin.js';
+import { catCommand } from './cat.js';
+import { contextCommand } from './context.js';
+import { resetCommand } from './reset.js';
+import { projectCommand } from './project.js';
 
 export const commands = {
   '/ask':     { handler: askCommand,     description: 'Ask a question with current model', usage: '/ask <prompt>', alias: ['/query']        },
@@ -35,6 +39,8 @@ export const commands = {
   '/critic':  { handler: criticCommand,  description: 'Run critic agent on last response', usage: '/critic [text]' },
   '/run':     { handler: runCommand,     description: 'Execute code in sandbox', usage: '/run <lang> <code>', alias: ['/exec'] },
   '/file':    { handler: fileCommand,    description: 'Attach a file to context', usage: '/file <path>', alias: ['/read'] },
+  '/project': { handler: projectCommand, description: 'Attach entire directory as context', usage: '/project', alias: ['/repo'] },
+  '/cat':     { handler: catCommand,     description: 'Print file with syntax highlighting', usage: '/cat <path>', alias: ['/view'] },
   '/shell':   { handler: shellCommand,   description: 'Execute a shell command', usage: '/shell <cmd>', alias: ['/sh'] },
   '/search':  { handler: searchCommand,  description: 'Web search with cited sources', usage: '/search <query>', alias: ['/web', '/find'] },
   '/plugin':  { handler: pluginCommand,  description: 'Manage plugins', usage: '/plugin [list|toggle]', alias: ['/plugins'] },
@@ -44,12 +50,14 @@ export const commands = {
   '/config':  { handler: configCommand,  description: 'Manage configuration', usage: '/config [list|get|set|reset]', alias: ['/cfg']          },
   '/theme':   { handler: themeCommand,   description: 'Switch UI theme', usage: '/theme [name]'                            },
   '/memory':  { handler: memoryCommand,  description: 'Manage session memory', usage: '/memory [list|set|get|clear]', alias: ['/mem']          },
+  '/context': { handler: contextCommand, description: 'Manage conversation context', usage: '/context [view|clear]', alias: ['/ctx']          },
   '/history': { handler: historyCommand, description: 'Browse command history', usage: '/history', alias: ['/log']          },
   '/export':  { handler: exportCommand,  description: 'Export session to file', usage: '/export [format]', alias: ['/save']         },
   '/cost':    { handler: costCommand,    description: 'Show session cost breakdown', usage: '/cost', alias: ['/usage']        },
   '/inspect': { handler: inspectCommand, description: 'Inspect execution pipeline', usage: '/inspect', alias: ['/trace']        },
   '/debug':   { handler: debugCommand,   description: 'Toggle debug mode', usage: '/debug [on|off|status]', alias: ['/dbg']          },
   '/clear':   { handler: clearCommand,   description: 'Clear the terminal', usage: '/clear', alias: ['/cls', '/c']    },
+  '/reset':   { handler: resetCommand,   description: 'Reset session context and memory', usage: '/reset', alias: ['/restart']    },
   '/help':    { handler: helpCommand,    description: 'Show help and shortcuts', usage: '/help [command]', alias: ['/h', '/?']      },
   '/exit':    { handler: exitCommand,    description: 'Exit KSHYARA CLI', usage: '/exit', alias: ['/quit']         },
 };

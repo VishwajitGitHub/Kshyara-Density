@@ -2,6 +2,7 @@ import { state } from '../state/index.js';
 import { streamGemini } from '../../models/providers/gemini.js';
 import { streamAnthropic } from '../../models/providers/anthropic.js';
 import { streamOpenAICompatible } from '../../models/providers/openaiCompatible.js';
+import { getSystemInstructions } from '../../memory/system/soulManager.js';
 
 export function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -33,21 +34,43 @@ export async function* streamResponse(prompt, options = {}) {
   try {
     let stream;
     
+    const messages = [];
+    
+    // Add system instructions from soul.md if present
+    const soulInstructions = getSystemInstructions();
+    if (soulInstructions) {
+      messages.push({ role: 'system', content: soulInstructions });
+    }
+    
+    // Build messages array from history + current prompt
+    // Filter out system messages that are just internal logs, or map them to user/assistant
+    const historyMessages = state.conversationHistory.map(msg => ({
+      role: msg.role === 'user' ? 'user' : (msg.role === 'system' ? 'user' : 'assistant'),
+      content: msg.content
+    }));
+    
+    messages.push(...historyMessages);
+    
+    // If the prompt isn't already the last message in history, add it
+    if (messages.length === 0 || messages[messages.length - 1].content !== prompt) {
+      messages.push({ role: 'user', content: prompt });
+    }
+    
     if (model.provider === 'Google') {
-      stream = streamGemini(prompt, modelId);
+      stream = streamGemini(messages, modelId);
     } else if (model.provider === 'Anthropic') {
-      stream = streamAnthropic(prompt, modelId);
+      stream = streamAnthropic(messages, modelId);
     } else if (model.provider === 'OpenAI') {
-      stream = streamOpenAICompatible(prompt, modelId, 'OpenAI', 'https://api.openai.com/v1/chat/completions');
+      stream = streamOpenAICompatible(messages, modelId, 'OpenAI', 'https://api.openai.com/v1/chat/completions');
     } else if (model.provider === 'Groq') {
       const groqModel = modelId === 'llama-3-3-groq' ? 'llama-3.3-70b-versatile' : modelId;
-      stream = streamOpenAICompatible(prompt, groqModel, 'Groq', 'https://api.groq.com/openai/v1/chat/completions');
+      stream = streamOpenAICompatible(messages, groqModel, 'Groq', 'https://api.groq.com/openai/v1/chat/completions');
     } else if (model.provider === 'OpenRouter') {
       const orModel = modelId === 'openrouter-auto' ? 'openrouter/auto' : modelId;
-      stream = streamOpenAICompatible(prompt, orModel, 'OpenRouter', 'https://openrouter.ai/api/v1/chat/completions');
+      stream = streamOpenAICompatible(messages, orModel, 'OpenRouter', 'https://openrouter.ai/api/v1/chat/completions');
     } else if (model.provider === 'DeepSeek') {
       const dsModel = modelId === 'deepseek-r1' ? 'deepseek-reasoner' : modelId;
-      stream = streamOpenAICompatible(prompt, dsModel, 'DeepSeek', 'https://api.deepseek.com/v1/chat/completions');
+      stream = streamOpenAICompatible(messages, dsModel, 'DeepSeek', 'https://api.deepseek.com/v1/chat/completions');
     } else {
       // Fallback to mock
       yield { type: 'chunk', text: `Mock response for ${model.name}. Provider not fully wired yet.` };

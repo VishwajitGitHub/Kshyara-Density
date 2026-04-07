@@ -11,9 +11,9 @@ export async function configCommand(args) {
       `Theme: ${config.theme}`,
       `Verbose: ${config.verbose}`,
       `Default Mode: ${config.defaultMode}`,
-      `Primary Model: ${config.models.primary}`,
-      `Fallback Model: ${config.models.fallback}`,
-      `User Name: ${config.user.name || 'Not set'}`,
+      `Primary Model: ${config.models?.primary || 'gpt-4o'}`,
+      `Fallback Model: ${config.models?.fallback || 'claude-3-7'}`,
+      `User Name: ${config.user?.name || 'Not set'}`,
     ]);
     return;
   }
@@ -21,8 +21,14 @@ export async function configCommand(args) {
   if (subcmd === 'get') {
     const key = args[1];
     if (!key) return console.log(renderError('Usage: /config get <key>'));
-    // Simple top-level get for now
-    console.log(renderSuccess(`${key} = ${config[key]}`));
+    
+    const keys = key.split('.');
+    let val = config;
+    for (const k of keys) {
+      if (val === undefined) break;
+      val = val[k];
+    }
+    console.log(renderSuccess(`${key} = ${val}`));
     return;
   }
 
@@ -36,7 +42,18 @@ export async function configCommand(args) {
     if (val === 'false') parsedVal = false;
     if (!isNaN(Number(val))) parsedVal = Number(val);
 
-    updateConfig({ [key]: parsedVal });
+    const keys = key.split('.');
+    if (keys.length === 1) {
+      updateConfig({ [key]: parsedVal });
+    } else if (keys.length === 2) {
+      const topKey = keys[0];
+      const subKey = keys[1];
+      const currentObj = config[topKey] || {};
+      updateConfig({ [topKey]: { ...currentObj, [subKey]: parsedVal } });
+    } else {
+      return console.log(renderError('Only 1 level of nesting is supported for now.'));
+    }
+
     console.log(renderSuccess(`Set ${key} to ${val}`));
     return;
   }

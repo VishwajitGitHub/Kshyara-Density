@@ -1,38 +1,17 @@
 import { getAllModelResponses, streamResponse } from '../utils/ai.js';
 import { state } from '../state/index.js';
-import { printTable } from '../ui/output.js';
-import { renderDivider, getGrad } from '../ui/prompt.js';
+import { printTable, streamOutput } from '../ui/output.js';
+import { renderDivider, renderAIPrefix } from '../ui/prompt.js';
 import chalk from 'chalk';
-
-function scoreResponse(resp) {
-  let score = resp.metadata.confidence * 50;
-  if (resp.content.includes('```')) score += 12;
-  if (resp.content.length > 300) score += 10;
-  if (resp.content.includes('→')) score += 5;
-  return Math.min(score, 100);
-}
-
-function mergeResponses(responses) {
-  const winner = responses[0];
-  let merged = winner.content;
-  
-  // Simple mock merge: append unique lines
-  const winnerLines = new Set(winner.content.split('\n'));
-  for (let i = 1; i < responses.length; i++) {
-    const lines = responses[i].content.split('\n');
-    for (const line of lines) {
-      if (line.trim() && !winnerLines.has(line)) {
-        merged += '\n' + line;
-        winnerLines.add(line);
-      }
-    }
-  }
-  return merged;
-}
 
 export async function runCombiner(prompt, opts = {}) {
   const theme = state.getThemeColors();
-  const g = getGrad();
+  const activeModels = state.getActiveModels();
+  
+  if (activeModels.length < 2) {
+    console.log(chalk.hex(theme.error)('  Combiner requires at least 2 active models. Use /models to enable more.'));
+    return;
+  }
   
   console.log();
   console.log(renderDivider('Combiner Engine Running'));
@@ -40,28 +19,33 @@ export async function runCombiner(prompt, opts = {}) {
   
   const responses = await getAllModelResponses(prompt);
   
-  responses.forEach(r => {
-    r.score = scoreResponse(r);
-  });
-  
-  responses.sort((a, b) => b.score - a.score);
-  
   console.log();
-  const headers = ['Rank', 'Model', 'Score', 'Tokens'];
-  const rows = responses.map((r, i) => [
-    i === 0 ? '🥇 1st' : i === 1 ? '🥈 2nd' : i === 2 ? '🥉 3rd' : `${i+1}th`,
+  const headers = ['Model', 'Tokens', 'Latency (ms)'];
+  const rows = responses.map((r) => [
     r.metadata.model,
-    r.score.toFixed(1),
-    r.metadata.tokens
+    r.metadata.tokens,
+    r.metadata.latency
   ]);
   printTable(headers, rows);
   
-  const merged = mergeResponses(responses);
+  console.log();
+  console.log(chalk.hex(theme.mutedDim)('  Synthesizing responses...'));
+  console.log();
   
-  console.log(renderDivider('Merged Output'));
+  // Use the primary model to synthesize
+  const synthesizer = activeModels[0];
+  console.log(renderAIPrefix(synthesizer.name, '🧠') + chalk.hex(theme.accent)(' [Synthesized Output]'));
+  
+  let synthesisPrompt = `You are a Combiner Agent. The user asked: "${prompt}"\n\nHere are the responses from different AI models:\n\n`;
+  responses.forEach((r, i) => {
+    synthesisPrompt += `--- Model ${i+1} (${r.metadata.model}) ---\n${r.content}\n\n`;
+  });
+  synthesisPrompt += `Please synthesize these responses into a single, comprehensive, and highly accurate final answer. Take the best parts of each response.`;
+  
+  const gen = streamResponse(synthesisPrompt, { model: synthesizer.id });
+  await streamOutput(gen);
+  
   console.log();
-  console.log(chalk.hex(theme.text)(merged));
-  console.log();
-  console.log(chalk.hex(theme.mutedDim)(`  Combined from ${responses.length} models. Primary source: ${responses[0].metadata.model}`));
+  console.log(chalk.hex(theme.mutedDim)(`  Combined from ${responses.length} models.`));
   console.log();
 }

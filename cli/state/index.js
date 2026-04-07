@@ -1,3 +1,5 @@
+import { loadMemory, saveMemory, loadHistory, saveHistory } from '../config/index.js';
+
 export const MODES = {
   CHAT: 'chat',
   COMMAND: 'command',
@@ -71,7 +73,7 @@ class AppState {
     this.verbose = false;
     this.debug = false;
     this.history = [];
-    this.conversationHistory = [];
+    this.conversationHistory = loadHistory();
     this.plugins = [];
     this.session = {
       id: Math.random().toString(36).substring(2, 10).toUpperCase(),
@@ -79,16 +81,32 @@ class AppState {
       messageCount: 0, totalTokens: 0, totalCost: 0,
     };
     this.activeModels = JSON.parse(JSON.stringify(ALL_MODELS));
-    this.memory = [];
+    this.memory = loadMemory();
     this.uptime = Date.now();
   }
 
   setMode(mode) { this.mode = mode; }
   setTheme(theme) { this.theme = theme; }
   addToHistory(entry) { this.history.push(entry); }
-  addToConversation(role, content, model) { this.conversationHistory.push({ role, content, model, timestamp: Date.now() }); }
-  addMemory(key, value) { this.memory.push({ key, value }); }
+  addToConversation(role, content, model) { 
+    this.conversationHistory.push({ role, content, model, timestamp: Date.now() }); 
+    saveHistory(this.conversationHistory);
+  }
+  addMemory(key, value) { 
+    this.memory.push({ key, value }); 
+    saveMemory(this.memory);
+  }
+  updateMemory(key, value) {
+    const existing = this.memory.find(m => m.key === key);
+    if (existing) existing.value = value;
+    else this.memory.push({ key, value });
+    saveMemory(this.memory);
+  }
   getMemory(key) { return this.memory.find(m => m.key === key)?.value; }
+  clearMemory() {
+    this.memory = [];
+    saveMemory(this.memory);
+  }
   incrementMessageCount(tokens = 0, cost = 0) {
     this.session.messageCount++;
     this.session.totalTokens += tokens;
